@@ -42,6 +42,7 @@ def upgrade():
     sa.Column('location', sa.String(length=50), nullable=True),
     sa.Column('status', sa.Integer(), nullable=False),
     sa.Column('user', sa.Integer(), nullable=True),
+    sa.Column('cause', sa.Text(length=512), nullable=True),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
     sa.ForeignKeyConstraint(['status'], ['bug_status.id'], ),
