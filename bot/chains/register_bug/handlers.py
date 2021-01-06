@@ -63,7 +63,7 @@ async def add_bug_location(msg: types.Message, state: FSMContext):
 
     await bot.send_photo(ADMIN_CHAT_ID, data.get('photo_id'), caption=f'Баг №{bug.id}\n'
                                                                       f'Місцезнаходження: <i>{msg.text}</i>\n'
-                                                                      f'Опис: <i>{data.get("description")}</i>',
+                                                                      f'Опис: "<i>{data.get("description")}</i>"',
                          reply_markup=get_admin_decision_kb(bug.id))
 
     await state.finish()
@@ -95,7 +95,7 @@ async def admin_decision_(cq: types.CallbackQuery):
             await state.set_data({'cause': msg.text})
             data = await state.get_data()
             await bot.send_message(ADMIN_CHAT_ID, f"Дякуємо! Причина буде передана відправнику!")
-            await bot.send_message(bug.user, f"Баг № {bug.id} відхилено 😔\n\nПричина: {data.get('cause')}")
+            await bot.send_message(bug.user, f"Баг № {bug.id} відхилено 😔\n\nПричина: \"{data.get('cause')}\"")
             await bug.update(cause=data.get('cause')).apply()
             await state.finish()
     await bug.update(status=status).apply()
