@@ -1,8 +1,8 @@
-"""
+"""first migration
 
-Revision ID: d841df4e45e2
+Revision ID: b28ff39c02a5
 Revises: 
-Create Date: 2020-12-31 01:53:25.118090
+Create Date: 2021-01-06 18:17:53.296746
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'd841df4e45e2'
+revision = 'b28ff39c02a5'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -49,6 +49,11 @@ def upgrade():
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_bugs_id'), 'bugs', ['id'], unique=True)
+    # setup base status
+    op.execute("INSERT INTO bug_status (status) values ('pending');")
+    op.execute("INSERT INTO bug_status (status) values ('registered');")
+    op.execute("INSERT INTO bug_status (status) values ('fixed');")
+    op.execute("INSERT INTO bug_status (status) values ('dropped');")
     # ### end Alembic commands ###
 
 
