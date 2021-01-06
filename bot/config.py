@@ -1,14 +1,13 @@
 import os
 
-from dotenv import load_dotenv
+from envparse import env
 
-BASE_DIR = os.path.abspath('..')
-ENV_FILE = os.path.join(BASE_DIR, '.env')
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-load_dotenv(ENV_FILE)
+env.read_envfile(os.path.join(BASE_DIR, '.env'))
 
-TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
+TELEGRAM_BOT_TOKEN = env.str('TELEGRAM_BOT_TOKEN')
 
-ADMIN_CHAT_ID = os.environ.get('ADMIN_CHAT_ID')
+ADMIN_CHAT_ID = env.str('ADMIN_CHAT_ID')
 
 DEFAULT_RATE_LIMIT = 2
