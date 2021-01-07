@@ -32,11 +32,6 @@ class BugsView(web.View):
     URL_PATH = r'/bugs'
 
     @property
-    async def category_ids(self):
-        categories = await BugStatus.query.where(BugStatus.status.in_(self.categories)).gino.all()
-        return [category.id for category in categories]
-
-    @property
     def categories(self):
         return set(json.loads(self.request.query.get('categories')))
 
@@ -50,7 +45,7 @@ class BugsView(web.View):
 
     @property
     def limit(self):
-        return max(self.per_page, 0)
+        return self.per_page
 
     @property
     def offset(self):
