@@ -6,5 +6,3 @@ class RegisterBug(StatesGroup):
     wait_location = State()
     wait_description = State()
     wait_admin_description = State()
-    message = State()
-    bug = State()

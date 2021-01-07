@@ -24,14 +24,14 @@ async def cancel(c: types.CallbackQuery, state: FSMContext):
 @dp.message_handler(regexp='Додати баг 🐞', state='*')
 async def add_bug_start(msg: types.Message, state: FSMContext):
     await RegisterBug.wait_photo.set()
-    answer = await msg.answer('Надішліть фото багу 📸', reply_markup=cancel_kb)
-    await state.update_data({'message': answer})
+    state_answer = await msg.answer('Надішліть фото багу 📸', reply_markup=cancel_kb)
+    await state.update_data({'message': state_answer})
 
 
 @dp.message_handler(state=RegisterBug.wait_photo, content_types=['photo', 'video', 'document'])
 async def add_bug_photo(msg: types.Message, state: FSMContext):
-    message = await state.get_data()
-    await message.get('message').delete_reply_markup()
+    state_message = await state.get_data()
+    await state_message.get('message').delete_reply_markup()
     if len(msg.photo) == 0:
         await msg.answer('Упсс.. Помилка 😔\n'
                          'Спробуйте надіслати фото, або скасуйте додавання багу', reply_markup=cancel_kb)
@@ -44,8 +44,8 @@ async def add_bug_photo(msg: types.Message, state: FSMContext):
 
 @dp.message_handler(state=RegisterBug.wait_description)
 async def add_bug_description(msg: types.Message, state: FSMContext):
-    message = await state.get_data()
-    await message.get('message').delete_reply_markup()
+    state_message = await state.get_data()
+    await state_message.get('message').delete_reply_markup()
     await state.update_data({'description': msg.text})
     await RegisterBug.wait_location.set()
     answer = await msg.answer('Надішліть місцезнаходження (аудиторію, корпус) якомога конкретніше 🏢',
@@ -90,10 +90,12 @@ async def admin_decision_(cq: types.CallbackQuery, state: FSMContext):
                                        caption=cq.message.caption + '\n\nБаг прийнято в роботу ✅')
         await bot.send_message(bug.user, f'Баг № {bug.id}'
                                          f' прийнято в роботу, будемо старатися пофіксити його найближчим часом 😉')
+        await cq.answer("Прийнято в роботу")
     else:
         await bot.edit_message_caption(ADMIN_CHAT_ID,
                                        message_id=cq.message.message_id,
                                        caption=cq.message.caption + '\n\nБаг відхилено ❌')
+        await cq.answer("Відхилено")
 
         await bot.send_message(ADMIN_CHAT_ID, 'Опишіть, чому цей баг відхилено 🤔')
         await RegisterBug.wait_admin_description.set()
@@ -104,8 +106,9 @@ async def admin_decision_(cq: types.CallbackQuery, state: FSMContext):
 
 @dp.message_handler(state=RegisterBug.wait_admin_description)
 async def cause_text(msg: types.Message, state: FSMContext):
-    data = await state.get_data()
+    bug_data = await state.get_data()
     await bot.send_message(ADMIN_CHAT_ID, f"Дякуємо! Причина буде передана відправнику!")
-    await bot.send_message(data.get('bug').user, f"Баг № {data.get('bug').id} відхилено 😔\n\nПричина: \"{msg.text}\"")
-    await data.get('bug').update(cause=msg.text).apply()
+    await bot.send_message(bug_data.get('bug').user,
+                           f"Баг № {bug_data.get('bug').id} відхилено 😔\n\nПричина: \"{msg.text}\"")
+    await bug_data.get('bug').update(cause=msg.text).apply()
     await state.finish()
