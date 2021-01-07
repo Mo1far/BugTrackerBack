@@ -85,14 +85,16 @@ async def admin_decision_(cq: types.CallbackQuery, state: FSMContext):
     bug = await Bug.get(int(bug_id))
     status = await BugStatus.select('id').where(BugStatus.status == decision).gino.scalar()
     if decision == 'registered':
-        await bot.edit_message_caption(ADMIN_CHAT_ID, message_id=cq.message.message_id, caption=cq.message.caption +
-                                                                                                '\n\nБаг прийнято '
-                                                                                                'в роботу ✅')
+        await bot.edit_message_caption(ADMIN_CHAT_ID,
+                                       message_id=cq.message.message_id,
+                                       caption=cq.message.caption + '\n\nБаг прийнято в роботу ✅')
         await bot.send_message(bug.user, f'Баг № {bug.id}'
                                          f' прийнято в роботу, будемо старатися пофіксити його найближчим часом 😉')
     else:
-        await bot.edit_message_caption(ADMIN_CHAT_ID, message_id=cq.message.message_id, caption=cq.message.caption +
-                                                                                                '\n\nБаг відхилено ❌', )
+        await bot.edit_message_caption(ADMIN_CHAT_ID,
+                                       message_id=cq.message.message_id,
+                                       caption=cq.message.caption + '\n\nБаг відхилено ❌')
+
         await bot.send_message(ADMIN_CHAT_ID, 'Опишіть, чому цей баг відхилено 🤔')
         await RegisterBug.wait_admin_description.set()
         await state.set_data({'bug': bug})
