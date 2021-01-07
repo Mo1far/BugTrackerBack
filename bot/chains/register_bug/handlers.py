@@ -24,14 +24,14 @@ async def cancel(c: types.CallbackQuery, state: FSMContext):
 @dp.message_handler(regexp='Додати баг 🐞', state='*')
 async def add_bug_start(msg: types.Message, state: FSMContext):
     await RegisterBug.wait_photo.set()
-    state_answer = await msg.answer('Надішліть фото багу 📸', reply_markup=cancel_kb)
-    await state.update_data({'message': state_answer})
+    data_state = await msg.answer('Надішліть фото багу 📸', reply_markup=cancel_kb)
+    await state.update_data({'message': data_state})
 
 
 @dp.message_handler(state=RegisterBug.wait_photo, content_types=['photo', 'video', 'document'])
 async def add_bug_photo(msg: types.Message, state: FSMContext):
-    state_message = await state.get_data()
-    await state_message.get('message').delete_reply_markup()
+    data_state = await state.get_data()
+    await data_state.get('message').delete_reply_markup()
     if len(msg.photo) == 0:
         await msg.answer('Упсс.. Помилка 😔\n'
                          'Спробуйте надіслати фото, або скасуйте додавання багу', reply_markup=cancel_kb)
@@ -44,8 +44,8 @@ async def add_bug_photo(msg: types.Message, state: FSMContext):
 
 @dp.message_handler(state=RegisterBug.wait_description)
 async def add_bug_description(msg: types.Message, state: FSMContext):
-    state_message = await state.get_data()
-    await state_message.get('message').delete_reply_markup()
+    data_state = await state.get_data()
+    await data_state.get('message').delete_reply_markup()
     await state.update_data({'description': msg.text})
     await RegisterBug.wait_location.set()
     answer = await msg.answer('Надішліть місцезнаходження (аудиторію, корпус) якомога конкретніше 🏢',
@@ -106,9 +106,9 @@ async def admin_decision_(cq: types.CallbackQuery, state: FSMContext):
 
 @dp.message_handler(state=RegisterBug.wait_admin_description)
 async def cause_text(msg: types.Message, state: FSMContext):
-    bug_data = await state.get_data()
+    data_state = await state.get_data()
     await bot.send_message(ADMIN_CHAT_ID, f"Дякуємо! Причина буде передана відправнику!")
-    await bot.send_message(bug_data.get('bug').user,
-                           f"Баг № {bug_data.get('bug').id} відхилено 😔\n\nПричина: \"{msg.text}\"")
-    await bug_data.get('bug').update(cause=msg.text).apply()
+    await bot.send_message(data_state.get('bug').user,
+                           f"Баг № {data_state.get('bug').id} відхилено 😔\n\nПричина: \"{msg.text}\"")
+    await data_state.get('bug').update(cause=msg.text).apply()
     await state.finish()
