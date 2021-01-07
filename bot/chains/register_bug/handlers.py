@@ -2,7 +2,7 @@ import os
 
 from aiogram import types
 from aiogram.dispatcher import FSMContext
-from aiogram.types import User as TgUser, ReplyKeyboardRemove
+from aiogram.types import User as TgUser
 
 from bot.chains.base.kb import start_kb
 from bot.chains.register_bug.kb import cancel_kb, get_admin_decision_kb
