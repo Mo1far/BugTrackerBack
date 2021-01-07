@@ -24,3 +24,4 @@ class Bug(TimedBaseModel):
     location = db.Column(db.String(50))
     status = db.Column(db.Integer, db.ForeignKey('bug_status.id'), nullable=False)
     user = db.Column(db.Integer, db.ForeignKey('users.id'))
+    cause = db.Column(db.Text)
