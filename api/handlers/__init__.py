@@ -1,3 +1,3 @@
-from .bugs import BugView
+from .bugs import BugView, BugsView
 
-HANDLERS = (BugView,)
+HANDLERS = (BugView, BugsView)
