@@ -25,8 +25,3 @@ class Bug(TimedBaseModel):
     status = db.Column(db.Integer, db.ForeignKey('bug_status.id'), nullable=False)
     user = db.Column(db.Integer, db.ForeignKey('users.id'))
     cause = db.Column(db.Text)
-
-    @classmethod
-    async def get_by_id(cls, id):
-        bug = await Bug.query.where(Bug.id == id).gino.first()
-        return bug
