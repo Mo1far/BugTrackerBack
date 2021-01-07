@@ -40,21 +40,43 @@ class BugsView(web.View):
     def categories(self):
         return set(json.loads(self.request.query.get('categories')))
 
+    @property
+    def page(self):
+        return max(int(self.request.query.get('page', 1)), 0)
+
+    @property
+    def per_page(self):
+        return min(int(self.request.query.get('per_page', 20)), 100)
+
+    @property
+    def limit(self):
+        return max(self.per_page, 0)
+
+    @property
+    def offset(self):
+        return self.page * self.per_page
+
     async def get(self):
-        response = []
+        response = {}
 
         query = Bug.join(BugStatus, and_(Bug.status == BugStatus.id,
-                                         BugStatus.status.in_(self.categories)))
+                                         BugStatus.status.in_(
+                                             self.categories)))
 
-        bugs = db.select([Bug.id, Bug.photo_path, Bug.description, Bug.location, BugStatus.status]).select_from(query)
+        bugs = db.select([Bug.id, Bug.photo_path, Bug.description, Bug.location, BugStatus.status]) \
+            .limit(self.limit).offset(self.offset) \
+            .select_from(query)
 
+        response['data'] = []
         for bug in await bugs.gino.all():
-            response.append({
+            response['data'].append({
                 'id': bug.id,
                 'photo_img': bug.photo_path,
                 'description': bug.description,
                 'location': bug.location,
                 'status': bug.status
             })
+
+        response['page'] = self.page
 
         return web.json_response(response)
