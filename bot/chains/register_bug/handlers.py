@@ -80,6 +80,14 @@ async def add_bug_location(msg: types.Message, state: FSMContext):
 
 @dp.callback_query_handler(lambda x: x.data.startswith('admin_decision_'))
 async def admin_decision_(cq: types.CallbackQuery, state: FSMContext):
+    current_state = await state.get_state()
+    if current_state == 'RegisterBug:wait_admin_description':
+        state_data = await state.get_data()
+        bug_id = state_data['bug'].id
+
+        await cq.message.answer(f'Спочатку дайте пояснення багу №{bug_id}')
+        return await cq.answer('Заборонено')
+
     c_data = cq.data.replace('admin_decision_', '')
     decision, bug_id = c_data.split('_')
     bug = await Bug.get(int(bug_id))
@@ -99,7 +107,7 @@ async def admin_decision_(cq: types.CallbackQuery, state: FSMContext):
         await bot.send_message(ADMIN_CHAT_ID, 'Опишіть, чому цей баг відхилено 🤔')
         await RegisterBug.wait_admin_description.set()
         await state.set_data({'bug': bug})
-        await cq.answer("Відхилено")
+        await cq.answer('Відхилено')
 
     await bug.update(status=status).apply()
 
