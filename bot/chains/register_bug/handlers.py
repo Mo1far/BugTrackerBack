@@ -95,11 +95,11 @@ async def admin_decision_(cq: types.CallbackQuery, state: FSMContext):
         await bot.edit_message_caption(ADMIN_CHAT_ID,
                                        message_id=cq.message.message_id,
                                        caption=cq.message.caption + '\n\nБаг відхилено ❌')
-        await cq.answer("Відхилено")
 
         await bot.send_message(ADMIN_CHAT_ID, 'Опишіть, чому цей баг відхилено 🤔')
         await RegisterBug.wait_admin_description.set()
         await state.set_data({'bug': bug})
+        await cq.answer("Відхилено")
 
     await bug.update(status=status).apply()
 
