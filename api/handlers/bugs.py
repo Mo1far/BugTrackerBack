@@ -49,7 +49,7 @@ class BugsView(web.View):
 
     @property
     def offset(self):
-        return self.page * self.per_page
+        return (self.page - 1) * self.per_page
 
     async def get(self):
         response = {}
@@ -59,7 +59,7 @@ class BugsView(web.View):
                                              self.categories)))
 
         bugs = db.select([Bug.id, Bug.photo_path, Bug.description, Bug.location, BugStatus.status]) \
-            .limit(self.limit).offset(self.offset) \
+            .limit(self.limit).offset(self.offset).order_by(Bug.created_at.desc()) \
             .select_from(query)
 
         response['data'] = []
