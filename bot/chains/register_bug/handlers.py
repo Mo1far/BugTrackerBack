@@ -36,7 +36,7 @@ async def add_bug_photo(msg: types.Message, state: FSMContext):
         await msg.answer('Упсс.. Помилка 😔\n'
                          'Спробуйте надіслати фото, або скасуйте додавання багу', reply_markup=cancel_kb)
 
-    await state.update_data({'photo_id': msg.photo[-1].file_id})
+    await state.update_data({'photo': msg.photo[-1]})
     await RegisterBug.wait_description.set()
     answer = await msg.answer('Опишіть проблему в 1 повідомленні', reply_markup=cancel_kb)
     await state.update_data({'message': answer})
@@ -59,17 +59,21 @@ async def add_bug_location(msg: types.Message, state: FSMContext):
     await data.get('message').delete_reply_markup()
     default_status = await BugStatus.select('id').where(BugStatus.status == 'pending').gino.scalar()
 
-    bug = await Bug.create(photo_path=data.get('photo_id'),
+    photo = data.get('photo')
+
+    bug = await Bug.create(photo_path=photo.file_id,
                            description=data.get('description'),
                            location=msg.text,
                            status=default_status,
                            user=TgUser.get_current())
-    await bot.download_file(data.get('photo_id'), os.path.join(UPLOAD_DIR, f'{bug.id}.jpg'))
-    await bug.update(photo_path=f'uploads/bugs/{bug.id}.jpg').apply()
 
-    await bot.send_photo(ADMIN_CHAT_ID, data.get('photo_id'), caption=f'Баг №{bug.id}\n'
-                                                                      f'Місцезнаходження: <i>{msg.text}</i>\n'
-                                                                      f'Опис: "<i>{data.get("description")}</i>"',
+    photo_path = os.path.join(UPLOAD_DIR, f'{bug.id}.jpg')
+    await photo.download(photo_path)
+    await bug.update(photo_path=photo_path).apply()
+
+    await bot.send_photo(ADMIN_CHAT_ID, photo.file_id, caption=f'Баг №{bug.id}\n'
+                                                               f'Місцезнаходження: <i>{msg.text}</i>\n'
+                                                               f'Опис: "<i>{data.get("description")}</i>"',
                          reply_markup=get_admin_decision_kb(bug.id))
 
     await state.finish()
