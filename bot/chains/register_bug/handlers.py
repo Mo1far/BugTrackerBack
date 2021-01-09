@@ -80,6 +80,14 @@ async def add_bug_location(msg: types.Message, state: FSMContext):
 
 @dp.callback_query_handler(lambda x: x.data.startswith('admin_decision_'))
 async def admin_decision_(cq: types.CallbackQuery, state: FSMContext):
+    current_state = await state.get_state()
+    if current_state == 'RegisterBug:wait_admin_description':
+        state_data = await state.get_data()
+        bug_id = state_data['bug'].id
+
+        await cq.message.answer(f'Спочатку дайте пояснення багу №{bug_id}')
+        return await cq.answer('Заборонено')
+
     c_data = cq.data.replace('admin_decision_', '')
     decision, bug_id = c_data.split('_')
     bug = await Bug.get(int(bug_id))
@@ -90,16 +98,16 @@ async def admin_decision_(cq: types.CallbackQuery, state: FSMContext):
                                        caption=cq.message.caption + '\n\nБаг прийнято в роботу ✅')
         await bot.send_message(bug.user, f'Баг № {bug.id}'
                                          f' прийнято в роботу, будемо старатися пофіксити його найближчим часом 😉')
-        await cq.answer("Прийнято в роботу")
+        await cq.answer('Прийнято в роботу')
     else:
         await bot.edit_message_caption(ADMIN_CHAT_ID,
                                        message_id=cq.message.message_id,
                                        caption=cq.message.caption + '\n\nБаг відхилено ❌')
-        await cq.answer("Відхилено")
 
         await bot.send_message(ADMIN_CHAT_ID, 'Опишіть, чому цей баг відхилено 🤔')
         await RegisterBug.wait_admin_description.set()
         await state.set_data({'bug': bug})
+        await cq.answer('Відхилено')
 
     await bug.update(status=status).apply()
 
@@ -107,8 +115,8 @@ async def admin_decision_(cq: types.CallbackQuery, state: FSMContext):
 @dp.message_handler(state=RegisterBug.wait_admin_description)
 async def cause_text(msg: types.Message, state: FSMContext):
     data_state = await state.get_data()
-    await bot.send_message(ADMIN_CHAT_ID, f"Дякуємо! Причина буде передана відправнику!")
+    await bot.send_message(ADMIN_CHAT_ID, f'Дякуємо! Причина буде передана відправнику!')
     await bot.send_message(data_state.get('bug').user,
-                           f"Баг № {data_state.get('bug').id} відхилено 😔\n\nПричина: \"{msg.text}\"")
+                           f'Баг № {data_state.get("bug").id} відхилено 😔\n\nПричина: \"{msg.text}\"')
     await data_state.get('bug').update(cause=msg.text).apply()
     await state.finish()
