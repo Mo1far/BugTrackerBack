@@ -5,7 +5,7 @@ from envparse import env
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 env.read_envfile(os.path.join(BASE_DIR, '.env'))
-UPLOAD_DIR = os.path.join(BASE_DIR, 'uploads/bugs')
+UPLOAD_DIR = os.path.join(BASE_DIR, 'uploads/')
 
 POSTGRES_HOST = env.str('DB_HOST', default='localhost')
 
