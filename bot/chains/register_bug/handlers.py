@@ -67,9 +67,9 @@ async def add_bug_location(msg: types.Message, state: FSMContext):
                            status=default_status,
                            user=TgUser.get_current())
 
-    photo_path = os.path.join(UPLOAD_DIR, f'{bug.id}.jpg')
+    photo_path = os.path.join(UPLOAD_DIR, f'bugs/{bug.id}.jpg')
     await photo.download(photo_path)
-    await bug.update(photo_path=photo_path).apply()
+    await bug.update(photo_path=f'bugs/{bug.id}.jpg').apply()
 
     await bot.send_photo(ADMIN_CHAT_ID, photo.file_id, caption=f'Баг №{bug.id}\n'
                                                                f'Місцезнаходження: <i>{msg.text}</i>\n'

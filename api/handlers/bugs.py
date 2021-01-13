@@ -1,8 +1,10 @@
 import json
+import os
 
 from aiohttp import web
 from sqlalchemy import and_
 
+from api.config import UPLOADS_DIR
 from db import Bug, db
 from db.models import BugStatus
 
@@ -66,7 +68,7 @@ class BugsView(web.View):
         for bug in await bugs.gino.all():
             response['data'].append({
                 'id': bug.id,
-                'photo_img': bug.photo_path,
+                'photo_img': os.path.join(UPLOADS_DIR, bug.photo_path),
                 'description': bug.description,
                 'location': bug.location,
                 'status': bug.status
