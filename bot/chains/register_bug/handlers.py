@@ -129,4 +129,5 @@ async def cause_text(msg: types.Message, state: FSMContext):
     await bot.send_message(ADMIN_CHAT_ID, f'Дякуємо! Причина буде передана відправнику!')
     await bot.send_message(data_state.get('bug_user'),
                            f'Баг № {data_state.get("bug_id")} відхилено 😔\n\nПричина: \"{msg.text}\"')
+    await Bug.get(int(data_state.get('bug_id'))).update(cause_text=msg.text).apply()
     await state.finish()
