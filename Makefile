@@ -7,3 +7,6 @@ migrate:
 
 migration:
 	PYTHONPATH=$(shell pwd):${PYTHONPATH} alembic revision --autogenerate -m "${message}"
+
+setup:
+	PYTHONPATH=$(shell pwd):${PYTHONPATH} pip install -r requirements.txt

@@ -6,7 +6,10 @@ from sqlalchemy import and_
 
 from api.config import UPLOADS_DIR
 from db import Bug, db
+from db.config import UPLOAD_DIR
 from db.models import BugStatus
+
+import time
 
 
 class BugView(web.View):
@@ -76,4 +79,43 @@ class BugsView(web.View):
 
         response['page'] = self.page
 
+        return web.json_response(response)
+
+    async def post(self):
+        data = await self.request.post()
+        if not 3 < len(data["location"]) < 50:
+            return web.json_response({"error": {"field": "location",
+                                                "desc": "location len must be between 3 and 50 chars"}})
+        if not 3 < len(data["description"]) < 3000:
+            return web.json_response({"error": {"field": "description",
+                                                "desc": "description len must be between 3 and 50 chars"}})
+        if data["image"].content_type not in ("image/png", "image/jpg"):
+            return web.json_response({"error": {"field": "image",
+                                                "desc": "Allowed content types is png and jpg"}})
+
+        file_type = data["image"].content_type.lstrip("image/")
+        filename = f"{int(time.time())}.{file_type}"
+        filepath = os.path.join(UPLOAD_DIR, f'bugs/{filename}')
+
+        with open(filepath, "wb") as file:
+            while True:
+                chunk = data["image"].file.read()  # 8192 bytes by default.
+                if not chunk:
+                    break
+
+                file.write(chunk)
+
+        default_status = await BugStatus.select('id').where(BugStatus.status == 'pending').gino.scalar()
+        bug = await Bug.create(photo_path=f'bugs/{filename}',
+                               description=data['description'],
+                               location=data["location"],
+                               status=default_status,
+                               user=None)
+
+        response = {'id': bug.id,
+                    'photo_path': f'bugs/{filename}',
+                    'description': bug.description,
+                    'location': bug.location,
+                    'status': default_status
+                    }
         return web.json_response(response)
